@@ -6,7 +6,8 @@ class Login extends Component {
     this.state = ({
       disabled: true,
       inputUsername: "",
-      inputPassword: ""
+      inputPassword: "",
+      //socket: this.props.socket
     })
 
     this.handleInputUsername = this.handleInputUsername.bind(this);
@@ -85,7 +86,7 @@ class Login extends Component {
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" disabled={this.state.disabled} onClick={() => this.props.handleLogin(inputUsername, inputPassword)}>Login</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" disabled={this.state.disabled} onClick={() => this.props.handleLogin(inputUsername, inputPassword, this.props.socket)}>Login</button>
               </div>
             </div> 
           </div>

@@ -1,6 +1,6 @@
 let app = require('express')();
-let server = require('http').createServer(app);
-let io = module.exports.io = require('socket.io')(server);
+//let server = require('http').createServer(app);
+//let io = module.exports.io = require('socket.io')(server);
 let mongoose = require("mongoose");
 let bodyParser = require("body-parser");
 let passport = require("passport");
@@ -15,8 +15,8 @@ const SocketManager = require('./SocketManager');
 
 mongoose.connect("mongodb://localhost/chat-app");
 
-io.on('connection', SocketManager);
-app.set('trust proxy', 1);
+//io.on('connection', SocketManager);
+//app.set('trust proxy', 1);
 app.use( bodyParser.json({ extended: true, type: '*/*' }) );
 app.use(session({
   secret: 'keyboard cat',
@@ -32,11 +32,14 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-app.use((req, res, next) => {
-  res.locals.currentUser = req.user;
-  res.locals.success = req.flash('success');
-  res.locals.error = req.flash('error');
-  next();
+
+app.all('*', function(req, res, next) {  
+  res.header("Access-Control-Allow-Origin", "*");  
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");  
+  res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE");  
+  res.header("X-Powered-By",' 3.2.1')  
+  res.header("Content-Type", "application/json;charset=utf-8");  
+  next();  
 });
 
 // var Schema = mongoose.Schema;
@@ -157,12 +160,16 @@ app.post('/login',
     }));
   });
 
-app.get("./logout", (req, res) => {
+app.get("/logout", (req, res) => {
   req.logout();
   req.flash("success", "Logged you out!");
   res.send();
 })
 
 app.listen(PORT, () => {
-  console.log("Connected to port:" + PORT);
+  console.log("app listening at :" + PORT);
 });
+
+// server.listen(PORT, function(err) {
+//   console.log('server listening at :' + PORT);
+// })

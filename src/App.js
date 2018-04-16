@@ -12,6 +12,7 @@ class App extends Component {
       username: cookie.load('username')
     }
 
+    this.sendMessage = this.sendMessage.bind(this);
     this.handleCreate = this.handleCreate.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -19,7 +20,7 @@ class App extends Component {
 
   componentWillMount() {
     //console.log(this.state.currentUser);
-    fetch('/login', {
+    fetch('http://localhost:3231/login', {
       method: 'POST',
       body: JSON.stringify( { 
         username: cookie.load('username'),
@@ -39,7 +40,7 @@ class App extends Component {
   }
 
   handleCreate(nickname, username, password) {
-    fetch('/register', {
+    fetch('http://localhost:3231/register', {
       method: 'POST',
       body: JSON.stringify( { 
         username: username,
@@ -61,8 +62,8 @@ class App extends Component {
     ).catch( (error) => Promise.reject(error) );
   }
 
-  handleLogin(username, password) {
-    fetch('/login', {
+  handleLogin(username, password, socket) {
+    fetch('http://localhost:3231/login', {
       method: 'POST',
       body: JSON.stringify( { 
         username: username,
@@ -78,6 +79,7 @@ class App extends Component {
           currentUser: json.currentUser,
           username: cookie.load('username')
         })
+        this.sendMessage(username, socket)
        
       }
     ).catch( (error) => Promise.reject(error) );
@@ -99,6 +101,17 @@ class App extends Component {
     //     })
     //   })
     // ).catch( (error) => Promise.reject(error) );
+  }
+
+  // 发送聊天信息
+  sendMessage(message, socket) {
+    if (message) {
+        const obj = {
+            message: message
+        }
+        socket.emit('message', obj);
+    }
+    return false
   }
 
   render() {
