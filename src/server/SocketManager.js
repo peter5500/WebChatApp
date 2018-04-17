@@ -1,4 +1,4 @@
-const io = require('./index').io;
+const io = require('./socket_server').io;
 const { VERIFY_USER, USER_CONNECTED, USER_DISCONNECTED, 
     LOGOUT, COMMUNITY_CHAT, MESSAGE_RECIEVED, MESSAGE_SENT,
     TYPING  } = require('../Events')
@@ -61,7 +61,8 @@ module.exports = function(socket) {
 	})
 
 	socket.on('message', (obj)=>{
-		console.log("Socket.on message :" + obj.message);
+		io.emit('message', obj);
+		console.log(`Server get! username: ${obj.username} message obj.message: ${obj.message}`);
 	})
 
 	/*

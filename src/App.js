@@ -79,7 +79,7 @@ class App extends Component {
           currentUser: json.currentUser,
           username: cookie.load('username')
         })
-        this.sendMessage(username, socket)
+        //this.sendMessage(username, socket)
        
       }
     ).catch( (error) => Promise.reject(error) );
@@ -104,10 +104,11 @@ class App extends Component {
   }
 
   // 发送聊天信息
-  sendMessage(message, socket) {
+  sendMessage(socket, username, message) {
     if (message) {
         const obj = {
-            message: message
+          username: username,
+          message: message,
         }
         socket.emit('message', obj);
     }
@@ -122,6 +123,7 @@ class App extends Component {
         currentUser = {this.state.currentUser && this.state.currentUser.username}
         handleLogout = {this.handleLogout}
         username = {this.state.username}
+        sendMessage = {this.sendMessage}
       />
     );
   }

@@ -11,8 +11,6 @@ let User = require("./models/user");
 let session = require("express-session");
 const PORT = process.env.PORT || 3231;
 
-const SocketManager = require('./SocketManager');
-
 mongoose.connect("mongodb://localhost/chat-app");
 
 //io.on('connection', SocketManager);

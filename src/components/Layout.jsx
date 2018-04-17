@@ -10,7 +10,8 @@ class Layout extends Component {
   constructor(props) {
       super(props);
       this.state = ({
-        currentUser : this.props.currentUser 
+        currentUser : this.props.currentUser,
+        messages: [],
       })
   
   }
@@ -28,10 +29,29 @@ class Layout extends Component {
     console.log("**********Socket try!");
 		socket.on('connect', ()=>{
 			console.log("**********Socket Connected!");
-		})
-		
-		this.setState({socket})
-	}
+    })
+    let obj = {
+      username : "test",
+      message : "Got socket init",
+    }
+    //socket.emit("message", obj)
+    
+    this.setState({socket})
+
+    socket.on('message', (obj)=>{
+      this.updateMsg(obj)
+    })
+  }
+  
+  // 发送新消息
+  updateMsg(obj) {
+    let messages = this.state.messages;
+    const newMsg = {type:'chat', username:obj.username, uid:obj.uid, message:obj.message};
+    console.log("Browser get! ${obj.username} : ${obj.message}")
+    this.setState({
+      messages: messages.concat(newMsg)
+    })
+  }
 
   render() {
     if(!this.props.username){
@@ -56,10 +76,13 @@ class Layout extends Component {
             currentUser = {this.props.currentUser}
             handleLogout = {this.props.handleLogout}
             username = {this.props.username}
-            socket = {this.props.socket}
+            socket = {this.state.socket}
           />
           <ChatRoom
-            socket = {this.props.socket}
+            socket = {this.state.socket}
+            username = {this.props.username}
+            sendMessage = {this.props.sendMessage}
+            messages = {this.state.messages}
           />
         </div>
       )
