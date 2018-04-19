@@ -60,9 +60,22 @@ module.exports = function(socket) {
 		sendTypingFromUser(chatId, isTyping)
 	})
 
-	socket.on('message', (obj)=>{
-		io.emit('message', obj);
-		console.log(`Server get! username: ${obj.username} message obj.message: ${obj.message}`);
+	socket.on('messageToServer', (obj, roomName)=>{
+		io.to(roomName).emit('messageToClient', obj);
+		console.log(`Server get! Room:${roomName} username: ${obj.username} message obj.message: ${obj.message}`);
+	})
+ 
+	socket.on('join', (data)=>{
+		const {currentUser, currentRoom} = data
+		socket.join(currentRoom)
+		console.log(`Server join! Room:${currentRoom}, username: ${currentUser}`);
+	})
+
+	socket.on('change', (data)=>{
+		const {currentUser, currentRoom, nextRoom} = data
+		socket.leave(currentRoom)
+		socket.join(nextRoom)
+		console.log(`Server changeRoom! From ${currentRoom} to ${nextRoom}, username: ${currentUser}`);
 	})
 
 	/*

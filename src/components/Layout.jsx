@@ -11,9 +11,10 @@ class Layout extends Component {
       super(props);
       this.state = ({
         currentUser : this.props.currentUser,
+        currentRoom : this.props.currentRoom,
         messages: [],
       })
-  
+      this.updateMsgs = this.updateMsgs.bind(this);
   }
 
   componentWillMount() {
@@ -21,24 +22,29 @@ class Layout extends Component {
 		this.initSocket()
   }
   
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      currentRoom: nextProps.currentRoom
+    });
+  }
+  
   /*
 	*	Connect to and initializes the socket.
 	*/
 	initSocket = ()=>{
-		const socket = io(socketUrl)
+    const socket = io(socketUrl)
     console.log("**********Socket try!");
-		socket.on('connect', ()=>{
-			console.log("**********Socket Connected!");
-    })
-    let obj = {
-      username : "test",
-      message : "Got socket init",
+    let joinData = {
+      currentUser: this.state.currentUser,
+      currentRoom : this.props.currentRoom,
     }
+		socket.emit('join', joinData)
     //socket.emit("message", obj)
     
     this.setState({socket})
 
-    socket.on('message', (obj)=>{
+    socket.on('messageToClient', (obj)=>{
+      console.log("client : got new message!")
       this.updateMsg(obj)
     })
   }
@@ -52,6 +58,21 @@ class Layout extends Component {
       messages: messages.concat(newMsg)
     })
   }
+  //update msgs in current view
+  updateMsgs(currentRoom){
+    fetch(`http://localhost:3231/getMsgsByRoom?roomName=${currentRoom}`, {
+      method: 'GET',
+    })
+    .then(response => response.ok ? response.json() : Promise.reject(response.statusText))
+    .then(
+      (json => {
+        console.log(json)
+        this.setState({
+          messages : json
+        })
+      })
+    ).catch( (error) => Promise.reject(error) );
+  }
 
   render() {
     if(!this.props.username){
@@ -64,6 +85,7 @@ class Layout extends Component {
               handleLogout = {this.props.handleLogout}
               username = {this.props.username}
               socket = {this.state.socket}
+              currentRoom = {this.state.currentRoom}
             />
           </div>
       )
@@ -77,12 +99,17 @@ class Layout extends Component {
             handleLogout = {this.props.handleLogout}
             username = {this.props.username}
             socket = {this.state.socket}
+            currentRoom = {this.state.currentRoom}
           />
           <ChatRoom
             socket = {this.state.socket}
             username = {this.props.username}
             sendMessage = {this.props.sendMessage}
+            sendMessage2 = {this.props.sendMessage2}
             messages = {this.state.messages}
+            currentRoom = {this.state.currentRoom}
+            updateRoom = {this.props.updateRoom}
+            updateMsgs = {this.updateMsgs}
           />
         </div>
       )

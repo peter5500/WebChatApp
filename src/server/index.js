@@ -88,6 +88,8 @@ app.all('*', function(req, res, next) {
 //   }
 // });
 
+let chatData = []
+
 isLoggedIn =  function(req, res, next){
   if(req.isAuthenticated()){
       return next();
@@ -162,6 +164,47 @@ app.get("/logout", (req, res) => {
   req.logout();
   req.flash("success", "Logged you out!");
   res.send();
+})
+
+app.post('/addMsg', (req, res) => {
+  const msg = req.body.msg
+  const roomName = req.body.roomName
+  let roomExisted = false;
+  chatData.forEach((chatdata, i ,a) => {
+    if(chatdata.roomName === roomName){
+      chatdata.msgs.push(msg)
+      roomExisted = true
+      console.log(`http server: room:${roomName} added information`)
+    }
+  })
+  if(!roomExisted){
+    let obj = {
+      roomName : roomName,
+      msgs : [msg],
+    }
+    chatData.push(obj)
+    console.log(`http server: room:${roomName} created`)
+  }
+  res.send(JSON.stringify({}));
+});
+
+//modify to use roomId in the version2
+//example: /getMsgsByRoom?roomName=abc
+app.get("/getMsgsByRoom", (req, res) => {
+  const roomName = req.query.roomName;
+  let roomExisted = false;
+  let msgs = []
+  chatData.forEach((chatdata, i ,a) => {
+    if(chatdata.roomName == roomName){
+      msgs = chatdata.msgs
+      roomExisted = true
+      console.log(`http server: room:${roomName} found and get`)
+    }
+  })
+  if(!roomExisted){
+    console.log(`http server: room:${roomName} not found`)
+  }
+  res.send(JSON.stringify(msgs));
 })
 
 app.listen(PORT, () => {
