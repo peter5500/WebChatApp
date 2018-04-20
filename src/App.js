@@ -9,17 +9,20 @@ class App extends Component {
     super(props);
     this.state = {
       currentUser: null,
-      username: cookie.load('username')
+      username: cookie.load('username'),
+      currentRoom: "dashboard"
     }
 
+    this.sendMessage = this.sendMessage.bind(this);
     this.handleCreate = this.handleCreate.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
+    this.updateRoom = this.updateRoom.bind(this);
   }
 
   componentWillMount() {
     //console.log(this.state.currentUser);
-    fetch('/login', {
+    fetch('http://localhost:3231/login', {
       method: 'POST',
       body: JSON.stringify( { 
         username: cookie.load('username'),
@@ -39,7 +42,7 @@ class App extends Component {
   }
 
   handleCreate(nickname, username, password) {
-    fetch('/register', {
+    fetch('http://localhost:3231/register', {
       method: 'POST',
       body: JSON.stringify( { 
         username: username,
@@ -61,8 +64,8 @@ class App extends Component {
     ).catch( (error) => Promise.reject(error) );
   }
 
-  handleLogin(username, password) {
-    fetch('/login', {
+  handleLogin(username, password, socket) {
+    fetch('http://localhost:3231/login', {
       method: 'POST',
       body: JSON.stringify( { 
         username: username,
@@ -78,6 +81,7 @@ class App extends Component {
           currentUser: json.currentUser,
           username: cookie.load('username')
         })
+        //this.sendMessage(username, socket)
        
       }
     ).catch( (error) => Promise.reject(error) );
@@ -101,6 +105,56 @@ class App extends Component {
     // ).catch( (error) => Promise.reject(error) );
   }
 
+  // 发送聊天信息
+  sendMessage(socket, username, message, roomName) {
+    if (message) {
+        const obj = {
+          username: username,
+          message: message,
+        }
+        this.addMsg(obj, roomName)
+        socket.emit('messageToServer', obj, roomName);
+    }
+    return false
+  }
+
+  // only for room enter
+  sendMessage2(socket, username, message, roomName) {
+    if (message) {
+        const obj = {
+          username: username,
+          message: message,
+        }
+        socket.emit('messageToServer', obj, roomName);
+    }
+    return false
+  }
+
+  addMsg(msg, roomName){
+    fetch('http://localhost:3231/addmsg', {
+      method: 'POST',
+      body: JSON.stringify( { 
+        msg: msg,
+        roomName : roomName,
+      } )
+    })
+    .then(response => response.ok ? response.json() : Promise.reject(response.statusText))
+    .then(
+      (json => {
+        this.setState({
+          
+        });
+      })
+    ).catch( (error) => Promise.reject(error) );
+  }
+
+  updateRoom(roomName){
+    this.setState({
+      currentRoom: roomName,
+    })
+    console.log(`browser room change to: ${this.state.currentRoom}`)
+  }
+
   render() {
     return (       
       <Layout
@@ -109,6 +163,10 @@ class App extends Component {
         currentUser = {this.state.currentUser && this.state.currentUser.username}
         handleLogout = {this.handleLogout}
         username = {this.state.username}
+        sendMessage = {this.sendMessage}
+        sendMessage2 = {this.sendMessage2}
+        currentRoom = {this.state.currentRoom}
+        updateRoom = {this.updateRoom}
       />
     );
   }

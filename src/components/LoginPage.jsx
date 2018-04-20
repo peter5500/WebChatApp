@@ -2,7 +2,7 @@ import React from 'react';
 import Login from './Login';
 import Signup from './Signup';
 
-const LoginPage = ({handleCreate, handleLogin}) => {
+const LoginPage = ({handleCreate, handleLogin, socket}) => {
   return (
     <div>
       <nav class="navbar navbar-dark bg-primary">
@@ -10,20 +10,14 @@ const LoginPage = ({handleCreate, handleLogin}) => {
         <form class="form-inline">
           <Login
             handleLogin = {handleLogin}
+            socket = {socket}
           />
           <Signup
             handleCreate = {handleCreate}
           />
         </form>
       </nav>
-      <div class="greeting">
-        <div>       
-          <img class="pin" src="http://www.e-chat.co/Resources/Icons/Misc/registerIconYesTick.png"/>Login/Create your account to start chatting!
-        </div>
-        <div>       
-          <img class="pin" src="http://www.e-chat.co/Resources/Icons/Misc/registerIconYesTick.png"/>Make your own chat room and chat with your friends
-        </div>  
-      </div>
+      
     </div>
   )
 }

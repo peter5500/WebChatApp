@@ -3,8 +3,8 @@ import React from 'react';
 const Logout = ({handleLogout}) => {
   return(
     <div>
-      <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#exampleModalCenter"><img class="logout-picture" src="http://flaticons.net/gd/makefg.php?i=icons/Mobile%20Application/Logout.png&r=255&g=255&b=255"></img>Log out</button>
-        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#exampleModalCenter2"><img class="logout-picture" src="http://flaticons.net/gd/makefg.php?i=icons/Mobile%20Application/Logout.png&r=255&g=255&b=255"></img>Log out</button>
+        <div class="modal fade" id="exampleModalCenter2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-header">
