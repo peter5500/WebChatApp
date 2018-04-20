@@ -26,17 +26,19 @@ class ChatRoom extends Component {
           currentRoom: nextProps.currentRoom,
           messages : this.props.messages,
         });
+        console.log(`username is now:${this.props.username}`)
     }
     
     handleChange(e) {
         this.setState({message: e.target.value})
-        console.log(`${this.state.username} input ${this.state.message}`)
+        //console.log(`${this.state.username} input ${this.state.message}`)
     }
 
     handleChangeRoomName(e) {
         this.setState({nextRoom: e.target.value})
     }
 
+    //for general message
     handleClick(e) {
         e.preventDefault();
         this.state.sendMessage(this.props.socket, this.state.username, this.state.message, this.state.currentRoom)
@@ -45,7 +47,7 @@ class ChatRoom extends Component {
             message: ``,
         })
     }
-
+    //for join message
     handleClick2(e) {
         e.preventDefault();
         this.changeRoom(this.props.socket, this.state.username, this.state.currentRoom, this.state.nextRoom)
@@ -69,39 +71,83 @@ class ChatRoom extends Component {
     
 
     render() {
-        const messageList = this.props.messages.map(function(message){
+        
+        
+        const messageList = this.props.messages.map((message) => {
+            const username = message.username
+            const cUser = this.state.username
+            console.log(`username:${username},cUser:${cUser}`)
             return(
-                    <p>{message.username}: {message.message}</p>
+                     username != cUser ? 
+                    <li class="left clearfix">
+                        <span class="chat-img1 pull-left">
+                            <img src="https://cdn.wezift.com/assets/apps/supreme/logo/_imgSingle/201dd34d8ed809a3f380c66cfd8f7747.png?mtime=20171005200957" alt="User Avatar" class="img-circle"></img>
+                        </span>
+                        <div class="chat-body1 clearfix">
+                            <p>{message.username}: {message.message}</p>
+                        </div>
+                    </li>
+                    :
+                    <li class="right clearfix">
+                        <div class="chat-body1 clearfix">
+                            <p>{message.username}: {message.message}</p>
+                        </div>
+                        <span class="chat-img1 pull-right">
+                            <img src="https://cdn.wezift.com/assets/apps/supreme/logo/_imgSingle/201dd34d8ed809a3f380c66cfd8f7747.png?mtime=20171005200957" alt="User Avatar" class="img-circle"></img>
+                        </span>
+                    </li>
                 )
         })
         return(
             
-            <div>
-                <p>currentRoom: {this.props.currentRoom}</p>
-                <div className="input-box">
-                    <div className="input">
-                        <input type="text" maxLength="140" placeholder="input message" value={this.state.message} 
-                        onChange={this.handleChange}
-                        />
+            
+                <div class="row">
+                    <div class="col-lg-3 chat_sidebar">
+                        <div class="row chatRow">
+                        </div>
+                        <div class="member_list">
+                        </div>
                     </div>
-                    <div className="button">
-                        <button type="button" onClick={this.handleClick}>Submit</button>
+                    <div class="col-lg message_section">
+                        <div class="row">
+                            <div class="col-lg message_section">
+                                {/* <div className="input-box">
+                                    <div className="input">
+                                        <input type="text" placeholder="input roomName" value={this.state.nextRoom} 
+                                        onChange={this.handleChangeRoomName}
+                                        />
+                                    </div>
+                                    <div className="button">
+                                        <button type="button" onClick={this.handleClick2}>ChangeRoom</button>
+                                    </div>
+                                </div> */}
+                                <div class="new_message_head">
+                                    <div class="pull-left chatRoom">currentRoom: {this.props.currentRoom}
+                                    </div>
+                                </div>
+                                <div class="chat_area">
+                                    <ul class="list-unstyled">
+                                        {messageList}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="message_write">
+                                <textarea class="form-control" 
+                                    placeholder="type a message" 
+                                    value={this.state.message} 
+                                    onChange={this.handleChange}>
+                                </textarea>
+                                <div class="clearfix">
+                                </div>
+                                <div class="chat_bottom">
+                                    <a href="#" class="pull-left upload_btn"><i class="fa fa-cloud-upload" aria-hidden="true"></i>Add Picture</a>
+                                    <a href="#" class="pull-right btn btn-success" onClick={this.handleClick}>Send</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="input-box">
-                    <div className="input">
-                        <input type="text" maxLength="140" placeholder="input roomName" value={this.state.nextRoom} 
-                        onChange={this.handleChangeRoomName}
-                        />
-                    </div>
-                    <div className="button">
-                        <button type="button" onClick={this.handleClick2}>ChangeRoom</button>
-                    </div>
-                </div>
-                <div>
-                    {messageList}
-                </div>
-            </div>
+            
         )
     }
 }
