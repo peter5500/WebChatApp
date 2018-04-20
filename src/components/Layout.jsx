@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import NavBar from './NavBar';
 import ChatRoom from './ChatRoom'
+import Dashboard from './Dashboard'
 import io from 'socket.io-client'
 import { USER_CONNECTED, LOGOUT } from '../Events'
 
@@ -15,6 +16,7 @@ class Layout extends Component {
         messages: [],
       })
       this.updateMsgs = this.updateMsgs.bind(this);
+      this.changeRoom = this.changeRoom.bind(this);
   }
 
   componentWillMount() {
@@ -74,6 +76,20 @@ class Layout extends Component {
     ).catch( (error) => Promise.reject(error) );
   }
 
+  //temp
+  changeRoom(socket, currentUser, currentRoom, nextRoom){
+    let data = {currentUser, currentRoom, nextRoom}
+    socket.emit("change", data)
+    console.log(`client room change sent`)
+    this.setState({
+        currentRoom: nextRoom,
+        nextRoom: ``,
+    })
+    this.props.sendMessage2(socket, currentUser, `Join in! ${nextRoom}`, nextRoom)
+    this.props.updateRoom(nextRoom)
+    this.updateMsgs(nextRoom)
+  }
+
   render() {
     if(!this.props.username){
       return (
@@ -89,7 +105,32 @@ class Layout extends Component {
             />
           </div>
       )
-    } else {
+    } else if(this.props.currentRoom === "dashboard"){
+      return (
+        <div>
+            <NavBar
+              handleCreate = {this.props.handleCreate}
+              handleLogin = {this.props.handleLogin}
+              currentUser = {this.props.currentUser}
+              handleLogout = {this.props.handleLogout}
+              username = {this.props.username}
+              socket = {this.state.socket}
+              currentRoom = {this.state.currentRoom}
+            />
+            <Dashboard
+              socket = {this.state.socket}
+              username = {this.props.username}
+              sendMessage = {this.props.sendMessage}
+              sendMessage2 = {this.props.sendMessage2}
+              messages = {this.state.messages}
+              currentRoom = {this.state.currentRoom}
+              updateRoom = {this.props.updateRoom}
+              updateMsgs = {this.updateMsgs}
+            />
+        </div>
+        
+      )
+    }else{
       return (
         <div>
           <NavBar
@@ -110,6 +151,7 @@ class Layout extends Component {
             currentRoom = {this.state.currentRoom}
             updateRoom = {this.props.updateRoom}
             updateMsgs = {this.updateMsgs}
+            changeRoom = {this.changeRoom}
           />
         </div>
       )

@@ -159,6 +159,14 @@ body{
     margin-right: 15px;
 }
 
+.chat-mainImg{
+    margin-right: 15px;
+    height: 40px;
+    width: 40px;
+    
+}
+
+
 .chat_area {
     float: left;
     overflow-x: hidden;
@@ -175,14 +183,35 @@ body{
     height: 40px;
     width: 40px;
 }
-  
-.chat_area .chat-body1 {
-    margin-left: 50px;
+
+.chat-img2 {
+    margin-top: 10px;
+    height: 40px;
+    width: 40px;
 }
   
-.chat-body1 p {
-    background: #fbf9fa none repeat scroll 0 0;
+.chat_area .media-body {
+    margin-left: 10px;
+}
+  
+
+.chat-body2 {
+    background: #f5f3f3 none repeat scroll 0 0;
+    border: 3px;
     padding: 10px;
+    margin-right: 60px;
+}
+
+.new-user {
+    color: rgb(150, 150, 150);
+    font-size: 13px;
+    height: 4px
+}
+
+.main-chat {
+    background: #8dd3f3 none repeat scroll 0 0;
+    padding: 10px;
+    margin-left: 50px;
 }
   
 .chat_area .admin_chat .chat-body1 {

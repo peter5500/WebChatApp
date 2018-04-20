@@ -10,7 +10,7 @@ class App extends Component {
     this.state = {
       currentUser: null,
       username: cookie.load('username'),
-      currentRoom: "lobby"
+      currentRoom: "dashboard"
     }
 
     this.sendMessage = this.sendMessage.bind(this);
