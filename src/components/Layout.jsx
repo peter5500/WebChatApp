@@ -54,8 +54,8 @@ class Layout extends Component {
   // 发送新消息
   updateMsg(obj) {
     let messages = this.state.messages;
-    const newMsg = {type:'chat', username:obj.username, uid:obj.uid, message:obj.message};
-    console.log("Browser get! ${obj.username} : ${obj.message}")
+    const newMsg = {type:'chat', username:obj.username, uid:obj.uid, context:obj.context};
+    console.log("Browser get! ${obj.username} : ${newMsg.context}")
     this.setState({
       messages: messages.concat(newMsg)
     })
@@ -141,6 +141,7 @@ class Layout extends Component {
             username = {this.props.username}
             socket = {this.state.socket}
             currentRoom = {this.state.currentRoom}
+            changeRoom = {this.changeRoom}
           />
           <ChatRoom
             socket = {this.state.socket}

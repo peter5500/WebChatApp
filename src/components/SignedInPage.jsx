@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Logout from './Logout';
 import SignedInAs from './SignedInAs';
-import LeaveRoom from './LeaveRoom'
+import LeaveRoom from './LeaveRoom';
 
 class SignedInPage extends Component {
   constructor(props) {
@@ -9,7 +9,6 @@ class SignedInPage extends Component {
   }
 
   render() {
-    
     return(
       <nav class="navbar navbar-dark bg-primary">
         <div class="navbar-brand navTitle">Chat Room</div>

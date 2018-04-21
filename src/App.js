@@ -21,17 +21,22 @@ class App extends Component {
   }
 
   componentWillMount() {
-    //console.log(this.state.currentUser);
-    fetch('http://localhost:3231/login', {
+    fetch('http://localhost:3231/authenticate', {
       method: 'POST',
       body: JSON.stringify( { 
         username: cookie.load('username'),
-        password: cookie.load('password')
+        sessionID: cookie.load('sessionID')
       } )
     })
     .then(response => response.ok ? response.json() : Promise.reject(response.statusText))
     .then(
       json => {
+        if (!json.success) {
+          cookie.remove('username');
+          cookie.remove('sessionID');
+          return;
+        }
+        console.log(json.success);
         this.setState({
           currentUser: json.currentUser,
           username: cookie.load('username')
@@ -54,10 +59,12 @@ class App extends Component {
     .then(
       (json => {
         cookie.save('username', username);
-        cookie.save('password', password);
+        cookie.save('sessionID', json.sessionID);
+        cookie.save('nickname', nickname);
         this.setState({
           currentUser: json.currentUser,
-          username: cookie.load('username')
+          username: cookie.load('username'),
+          nickname: cookie.load('nickname')
         });
         
       })
@@ -76,7 +83,8 @@ class App extends Component {
     .then(
       json => {
         cookie.save('username', username);
-        cookie.save('password', password);
+        cookie.save('sessionID', json.sessionID);
+        cookie.save('nickname', json.currentUser.nickname);
         this.setState({
           currentUser: json.currentUser,
           username: cookie.load('username')
@@ -88,21 +96,21 @@ class App extends Component {
   }
 
   handleLogout() {
+    fetch('http://localhost:3231/logout', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        sessionID: this.state.sessionID,
+      })
+    })
+    .catch( (error) => Promise.reject(error) );
     cookie.remove('username');
-    cookie.remove('password');
+    cookie.remove('nickname');
+    cookie.remove('sessionID');
+    console.log(cookie.load('sessionID'))
     this.setState({
       currentUser: null,
-      username: cookie.load('username')
+      username: cookie.load('username'),
     });
-    // fetch('/logout')
-    // .then(response => response.ok ? response.json() : Promise.reject(response.statusText))
-    // .then(
-    //   (json => {
-    //     this.setState({
-    //       currentUser: null,
-    //     })
-    //   })
-    // ).catch( (error) => Promise.reject(error) );
   }
 
   // 发送聊天信息
@@ -110,7 +118,7 @@ class App extends Component {
     if (message) {
         const obj = {
           username: username,
-          message: message,
+          context: message,
         }
         this.addMsg(obj, roomName)
         socket.emit('messageToServer', obj, roomName);
@@ -123,7 +131,7 @@ class App extends Component {
     if (message) {
         const obj = {
           username: username,
-          message: message,
+          context: message,
         }
         socket.emit('messageToServer', obj, roomName);
     }

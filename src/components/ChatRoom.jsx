@@ -31,6 +31,9 @@ class ChatRoom extends Component {
     
     handleChange(e) {
         this.setState({message: e.target.value})
+        if (e.keyCode === 13) {
+            this.handleClick(e);
+        }
         //console.log(`${this.state.username} input ${this.state.message}`)
     }
 
@@ -70,23 +73,23 @@ class ChatRoom extends Component {
     // }
 
     render() {
-        const messageList = this.props.messages.map((message) => {
+        const messageList = this.props.messages.map((message, index) => {
             const username = message.username
             const cUser = this.state.username
             return(
                      username !== cUser ? 
-                     <li class="media">
+                     <li key={index} class="media">
                         <img class="chat-img2" src="https://cdn.wezift.com/assets/apps/supreme/logo/_imgSingle/201dd34d8ed809a3f380c66cfd8f7747.png?mtime=20171005200957" alt="Generic placeholder image"></img>
                         <div class="media-body">
                         <h6 class="mt-0 mb-1">{message.username}</h6>
-                        <p class="chat-body2 rounded">{message.message}</p>                       
+                        <p class="chat-body2 rounded">{message.context}</p>                       
                         </div>
                     </li>
                     :
-                    <li class="user-chat">
+                    <li key={index} class="user-chat">
                         <div class="media">
                             <div class="media-body">
-                              <p class="text-right main-chat rounded">{message.message}</p>
+                              <p class="text-right main-chat rounded">{message.context}</p>
                             </div>
                             <img class="ml-3 chat-mainImg" src="https://cdn.wezift.com/assets/apps/supreme/logo/_imgSingle/201dd34d8ed809a3f380c66cfd8f7747.png?mtime=20171005200957" alt="Generic placeholder image"></img>
                         </div>
@@ -118,7 +121,9 @@ class ChatRoom extends Component {
                             <textarea class="form-control" 
                                 placeholder="type a message" 
                                 value={this.state.message} 
-                                onChange={this.handleChange}>
+                                onChange={e => this.handleChange(e)}
+                                onKeyUp={e => this.handleChange(e)}
+                                >
                             </textarea>
                             <div class="clearfix">
                             </div>

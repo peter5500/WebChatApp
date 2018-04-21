@@ -62,7 +62,7 @@ module.exports = function(socket) {
 
 	socket.on('messageToServer', (obj, roomName)=>{
 		io.to(roomName).emit('messageToClient', obj);
-		console.log(`Server get! Room:${roomName} username: ${obj.username} message obj.message: ${obj.message}`);
+		console.log(`Server get! Room:${roomName} username: ${obj.username} message obj.message: ${obj.context}`);
 	})
  
 	socket.on('join', (data)=>{

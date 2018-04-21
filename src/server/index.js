@@ -7,8 +7,13 @@ let passport = require("passport");
 let cookieParser = require("cookie-parser");
 let LocalStrategy = require("passport-local");
 let flash = require("connect-flash");
+
 let User = require("./models/user");
+let Chatroom = require("./models/chatroom");
+let Message = require("./models/message");
+
 let session = require("express-session");
+let sessionIDs = new Map();
 const PORT = process.env.PORT || 3231;
 
 mongoose.connect("mongodb://localhost/chat-app");
@@ -90,35 +95,12 @@ app.all('*', function(req, res, next) {
 
 let chatData = []
 
-isLoggedIn =  function(req, res, next){
-  if(req.isAuthenticated()){
-      return next();
-  }
-  req.flash("error", "You must be signed in to do that!");
-  res.redirect("/login");
-}
-
-app.get('/asd',
-  (req, res) => {
-    passport.authenticate("local")(req, res, () => {
-      req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
-      result.userExist = false;
-      result.isSuccessful = true;
-      result.currentUser = {
-        username: req.user.username,
-        id: req.user._id
-      }
-      res.send(JSON.stringify(result));
-   });
-  });
-
 app.post("/register", (req, res) => {
   let newUser = new User({username: req.body.username, nickname: req.body.nickname});
   console.log(req.body.username);
   let result = {};
   User.findOne({ username: req.body.username }, (err, user) => {
       if (user != null) {
-        req.flash("error", "Username exists");
         result.userExist = true;
         result.isSuccessful = false; 
         res.send(JSON.stringify(result));
@@ -135,58 +117,142 @@ app.post("/register", (req, res) => {
     }
 
     passport.authenticate("local")(req, res, () => {
-      req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
-      result.userExist = false;
-      result.isSuccessful = true;
-      result.currentUser = {
-        username: req.user.username,
-        id: req.user._id
-      }
-      res.send(JSON.stringify(result));
-   });
-
+      sessionIDs.set(req.sessionID, req.session.passport.user);
+      res.send(JSON.stringify({
+        loginSuccessful: true,
+        currentUser: {
+          username: req.session.passport.user,
+          nickname: req.body.nickname  
+        },
+        sessionID: req.sessionID
+      }));
+    });
   });
-}); 
+});
 
 app.post('/login', 
-  passport.authenticate('local', { failureRedirect: '/login' }),
+  passport.authenticate('local', {}),
   (req, res) => {
-    res.send(JSON.stringify({
-      loginSuccessful: true,
-      currentUser: {
-        username: req.user.username,
-        id: req.user._id
+    sessionIDs.set(req.sessionID, req.session.passport.user);
+    User.findOne({"username": req.session.passport.user}, (err, nickname) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(JSON.stringify({
+          loginSuccessful: true,
+          currentUser: {
+            nickname: nickname,
+            username: req.session.passport.user,  
+          },
+          sessionID: req.sessionID
+        }));
       }
-    }));
+    }) 
+    
   });
 
-app.get("/logout", (req, res) => {
-  req.logout();
-  req.flash("success", "Logged you out!");
-  res.send();
-})
+  app.post('/authenticate', (req, res) => {
+    console.log(req.body.sessionID);
+    console.log(req.body.username);
+    currentUser = {
+      username: req.body.username,  
+    };
+    if (sessionIDs.has(req.body.sessionID) 
+        && sessionIDs.get(req.body.sessionID) === req.body.username) {
+      res.send(JSON.stringify({
+        success: true,
+        currentUser: currentUser
+      }))
+    } else {
+      res.send(JSON.stringify({
+        currentUser: null,
+        success: false,
+      }))
+    }
+    
+  })
 
+  app.post("/logout", (req, res) => {
+    sessionIDs.delete(req.sessionID);
+    req.logout();
+    res.send();
+  })
+
+const addRoom = (res, roomName, msg) => {
+  msg.date = new Date();
+  msg.type = "System";
+  let newChatroom = {
+    room_name: roomName,
+    messages: []
+  }
+  Chatroom.create(newChatroom, (err, newChatroom) => {
+    if(err){
+      console.log(err);
+    } else {
+      Message.create(msg, (err, message) => {
+        if (err) {
+          res.send(JSON.stringify({}));
+          return;
+        } else {
+          //add data into comment
+          message.context = msg.context;
+          message.date = msg.date;
+          message.type = msg.type;
+          message.username = msg.username;
+          //save message
+          message.save();
+          newChatroom.messages.push(message);
+          newChatroom.save();
+          console.log(message);
+          res.send(JSON.stringify({}));
+        }
+      })
+    }
+  });
+}
+  
 app.post('/addMsg', (req, res) => {
-  const msg = req.body.msg
-  const roomName = req.body.roomName
-  let roomExisted = false;
-  chatData.forEach((chatdata, i ,a) => {
-    if(chatdata.roomName === roomName){
-      chatdata.msgs.push(msg)
-      roomExisted = true
-      console.log(`http server: room:${roomName} added information`)
+  const msg = req.body.msg;
+  const roomName = req.body.roomName;
+
+  Chatroom.findOne({'room_name': roomName}, (err, chatroom) => {
+    console.log("聊天室到底在不在啊 " + chatroom);
+    if (chatroom == null) {
+      addRoom(res, roomName, msg);
+      return;
+    } else {
+      Message.create(msg, (err, message) => {
+        if (err) {
+          res.send(JSON.stringify({}));
+          return;
+        } else {
+          //add data into comment
+          message.context = msg.context;
+          message.date = msg.date;
+          message.type = msg.type;
+          message.username = msg.username;
+          //save message
+          message.save();
+          chatroom.messages.push(message);
+          chatroom.save();
+          console.log(message);
+          res.send(JSON.stringify({}));
+        }
+      })
+    }
+  });
+});  
+
+//delete the chatroom
+app.delete("/delRoom", (req, res) => {
+  Chatroom.findOneAndRemove({'room_name': roomName}, (err, chatroom) => {
+    if (err) {
+      res.send(JSON.stringify());
+    } else {
+      res.send(JSON.stringify());
     }
   })
-  if(!roomExisted){
-    let obj = {
-      roomName : roomName,
-      msgs : [msg],
-    }
-    chatData.push(obj)
-    console.log(`http server: room:${roomName} created`)
-  }
-  res.send(JSON.stringify({}));
-});
+})
 
 //modify to use roomId in the version2
 //example: /getMsgsByRoom?roomName=abc
@@ -194,19 +260,33 @@ app.get("/getMsgsByRoom", (req, res) => {
   const roomName = req.query.roomName;
   let roomExisted = false;
   let msgs = []
-  chatData.forEach((chatdata, i ,a) => {
-    if(chatdata.roomName == roomName){
-      msgs = chatdata.msgs
-      roomExisted = true
-      console.log(`http server: room:${roomName} found and get`)
+
+  Chatroom.findOne({'room_name': roomName}).populate("messages").exec((err, chatroom) => {
+    if (chatroom == null) {
+      console.log(`http server: room:${roomName} not found`);
+      res.send(JSON.stringify(msgs));
+      return;
     }
-  })
-  if(!roomExisted){
-    console.log(`http server: room:${roomName} not found`)
-  }
-  res.send(JSON.stringify(msgs));
+
+    msgs = chatroom.messages;
+    roomExisted = true;
+    console.log(`http server: room:${roomName} found and get`);
+    res.send(JSON.stringify(msgs));
+    });
 })
 
+//edit the nickname
+app.put("/editProfile", (req, res) => {
+  User.findOneAndUpdate({'username': req.body.username}, {$set:{name:"Naomi"}}, (err, doc) => {
+    if (err) {
+      console.log(err);
+      res.send(JSON.stringify({success: false}));
+    } else {
+      res.send(JSON.stringify({success: true}));
+    }
+  });
+});
+  
 app.listen(PORT, () => {
   console.log("app listening at :" + PORT);
 });
