@@ -3,7 +3,7 @@ import LoginPage from './LoginPage';
 import SignedInPage from './SignedInPage'
 
 
-const NavBar = ({handleCreate, handleLogin, currentUser, handleLogout, username, socket, currentRoom, changeRoom}) => {
+const NavBar = ({handleCreate, handleLogin, currentUser, handleLogout, username, socket, currentRoom, leaveRoom}) => {
   return (
     <div>
     { currentUser ? 
@@ -13,7 +13,7 @@ const NavBar = ({handleCreate, handleLogin, currentUser, handleLogout, username,
         username = {username}
         socket = {socket}
         currentRoom = {currentRoom}
-        changeRoom = {changeRoom}
+        leaveRoom = {leaveRoom}
       /> :
       <LoginPage
         handleCreate = {handleCreate}

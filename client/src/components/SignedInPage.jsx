@@ -11,7 +11,7 @@ class SignedInPage extends Component {
   render() {
     return(
       <nav class="navbar navbar-dark bg-primary">
-        <div class="navbar-brand navTitle">Chat Room</div>
+        <div class="navbar-brand navTitle"><img class="chat-nav-img" src="https://png.icons8.com/metro/1600/chat.png"></img>Chat Room</div> 
         <form class="form-inline">
           <SignedInAs
             username = {this.props.username}
@@ -23,12 +23,17 @@ class SignedInPage extends Component {
               username = {this.props.username}
               currentUser = {this.props.currentUser}
               currentRoom = {this.props.currentRoom}
-              changeRoom = {this.props.changeRoom}
+              leaveRoom = {this.props.leaveRoom}
             />
             : null
           }
           <Logout
             handleLogout = {this.props.handleLogout}
+            socket = {this.props.socket}
+            username = {this.props.username}
+            currentUser = {this.props.currentUser}
+            currentRoom = {this.props.currentRoom}
+            leaveRoom = {this.props.leaveRoom}
           />
         </form>
       </nav>

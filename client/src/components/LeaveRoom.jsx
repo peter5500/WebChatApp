@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LeaveRoom = ({socket, username, currentUser, currentRoom, changeRoom}) => {
+const LeaveRoom = ({socket, username, currentUser, currentRoom, leaveRoom}) => {
   return(
     <div>
       <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#exampleModalCenter"><img class="logout-picture" src="http://flaticons.net/gd/makefg.php?i=icons/Mobile%20Application/Logout.png&r=255&g=255&b=255"></img>Leave Room</button>
@@ -18,7 +18,7 @@ const LeaveRoom = ({socket, username, currentUser, currentRoom, changeRoom}) => 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" onClick={() => changeRoom(socket, currentUser, currentRoom, "dashboard")}>Yes</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onClick={() => leaveRoom(socket, currentUser, currentRoom)}>Yes</button>
                 </div>
             </div>
           </div>

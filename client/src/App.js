@@ -14,6 +14,8 @@ class App extends Component {
     }
 
     this.sendMessage = this.sendMessage.bind(this);
+    this.sendMessage2 = this.sendMessage2.bind(this);
+    this.sendMessage3 = this.sendMessage3.bind(this);
     this.handleCreate = this.handleCreate.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -21,7 +23,7 @@ class App extends Component {
   }
 
   componentWillMount() {
-    fetch('http://localhost:3231/authenticate', {
+    fetch('/authenticate', {
       method: 'POST',
       body: JSON.stringify( { 
         username: cookie.load('username'),
@@ -47,7 +49,7 @@ class App extends Component {
   }
 
   handleCreate(nickname, username, password) {
-    fetch('http://localhost:3231/register', {
+    fetch('/register', {
       method: 'POST',
       body: JSON.stringify( { 
         username: username,
@@ -72,7 +74,7 @@ class App extends Component {
   }
 
   handleLogin(username, password, socket) {
-    fetch('http://localhost:3231/login', {
+    fetch('/login', {
       method: 'POST',
       body: JSON.stringify( { 
         username: username,
@@ -96,7 +98,7 @@ class App extends Component {
   }
 
   handleLogout() {
-    fetch('http://localhost:3231/logout', {
+    fetch('/logout', {
       method: 'POST',
       body: JSON.stringify({ 
         sessionID: this.state.sessionID,
@@ -119,6 +121,7 @@ class App extends Component {
         const obj = {
           username: username,
           context: message,
+          type: "chat",
         }
         this.addMsg(obj, roomName)
         socket.emit('messageToServer', obj, roomName);
@@ -126,20 +129,36 @@ class App extends Component {
     return false
   }
 
-  // only for room enter
+  // only for enter room
   sendMessage2(socket, username, message, roomName) {
-    if (message) {
-        const obj = {
-          username: username,
-          context: message,
-        }
-        socket.emit('messageToServer', obj, roomName);
+    const obj = {
+      username: username,
+      context: message,
+      type: "system",
     }
+    this.addMsg(obj, roomName)
+    socket.emit('joinToServer', obj, roomName);
+    
+    return false
+  }
+
+   // only for leave room
+   sendMessage3(socket, username, message, roomName) {
+    const obj = {
+      username: username,
+      context: message,
+      type: "system",
+    }
+    this.addMsg(obj, roomName)
+    socket.emit('leaveToServer', obj, roomName);
+    this.setState({
+      currentRoom: "dashboard"
+    })
     return false
   }
 
   addMsg(msg, roomName){
-    fetch('http://localhost:3231/addmsg', {
+    fetch('/addmsg', {
       method: 'POST',
       body: JSON.stringify( { 
         msg: msg,
@@ -160,7 +179,7 @@ class App extends Component {
     this.setState({
       currentRoom: roomName,
     })
-    console.log(`browser room change to: ${this.state.currentRoom}`)
+    console.log(`browser app.js room change to: ${this.state.currentRoom}`)
   }
 
   render() {
@@ -173,6 +192,7 @@ class App extends Component {
         username = {this.state.username}
         sendMessage = {this.sendMessage}
         sendMessage2 = {this.sendMessage2}
+        sendMessage3 = {this.sendMessage3}
         currentRoom = {this.state.currentRoom}
         updateRoom = {this.updateRoom}
       />

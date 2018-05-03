@@ -1,25 +1,28 @@
-let app = require('express')();
+const express = require('express')
+const app = express();
+const path = require('path');
 //let server = require('http').createServer(app);
 //let io = module.exports.io = require('socket.io')(server);
-let mongoose = require("mongoose");
-let bodyParser = require("body-parser");
-let passport = require("passport");
-let cookieParser = require("cookie-parser");
-let LocalStrategy = require("passport-local");
-let flash = require("connect-flash");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const passport = require("passport");
+const cookieParser = require("cookie-parser");
+const LocalStrategy = require("passport-local");
+const flash = require("connect-flash");
 
-let User = require("./models/user");
-let Chatroom = require("./models/chatroom");
-let Message = require("./models/message");
+const User = require("./models/user");
+const Chatroom = require("./models/chatroom");
+const Message = require("./models/message");
 
-let session = require("express-session");
+const session = require("express-session");
 let sessionIDs = new Map();
 const PORT = process.env.PORT || 3231;
 
-mongoose.connect("mongodb://localhost/chat-app");
+mongoose.connect("mongodb://xrc0707:2067396912@ds151809.mlab.com:51809/chat-app");
 
 //io.on('connection', SocketManager);
 //app.set('trust proxy', 1);
+app.use(express.static(path.resolve(__dirname, './client/build')));
 app.use( bodyParser.json({ extended: true, type: '*/*' }) );
 app.use(session({
   secret: 'keyboard cat',
@@ -93,7 +96,7 @@ app.all('*', function(req, res, next) {
 //   }
 // });
 
-let chatData = []
+let memberData = [] //[{roomName: xxx, roomMember: ["a","b"]}, {...} ...]
 
 app.post("/register", (req, res) => {
   let newUser = new User({username: req.body.username, nickname: req.body.nickname});
@@ -180,7 +183,7 @@ app.post('/login',
 
 const addRoom = (res, roomName, msg) => {
   msg.date = new Date();
-  msg.type = "System";
+  msg.type = "system";
   let newChatroom = {
     room_name: roomName,
     messages: []
@@ -216,7 +219,6 @@ app.post('/addMsg', (req, res) => {
   const roomName = req.body.roomName;
 
   Chatroom.findOne({'room_name': roomName}, (err, chatroom) => {
-    console.log("聊天室到底在不在啊 " + chatroom);
     if (chatroom == null) {
       addRoom(res, roomName, msg);
       return;
@@ -245,10 +247,15 @@ app.post('/addMsg', (req, res) => {
 
 //delete the chatroom
 app.delete("/delRoom", (req, res) => {
-  Chatroom.findOneAndRemove({'room_name': roomName}, (err, chatroom) => {
+  let roomName = req.body.roomName;
+  console.log(roomName);
+  Chatroom.findOneAndUpdate({'room_name': roomName}, {$set:{messages:[]}}, (err, chatroom) => {
+    console.log(chatroom);
     if (err) {
+      console.log("出错啦");
       res.send(JSON.stringify());
     } else {
+      console.log("已经删除");
       res.send(JSON.stringify());
     }
   })
@@ -286,6 +293,71 @@ app.put("/editProfile", (req, res) => {
     }
   });
 });
+
+app.post("/addMember", (req, res) => {
+  const roomName = req.body.roomName
+  const userName = req.body.userName
+  addMember(roomName, userName)
+  res.send(JSON.stringify({}));
+})
+
+const addMember = (roomName, userName) => {
+  let roomExisted = false;
+  memberData.forEach((item) => {
+    if(item.roomName === roomName){
+      roomExisted = true;
+      item.roomMember.push(userName)
+    }
+  })
+  if(!roomExisted){
+    let obj = {
+      roomName: roomName,
+      roomMember: [userName],
+    }
+    memberData.push(obj)
+  }
+}
+
+app.get("/getMembersByRoom", (req, res) => {
+  const roomName = req.query.roomName;
+  let memberList = getMembers(roomName)
+  res.send(JSON.stringify(memberList));
+})
+
+const getMembers = (roomName) => {
+  let memberList = []
+  memberData.forEach((item) => {
+    if(item.roomName === roomName){
+      memberList = item.roomMember
+    }
+  })
+  return memberList
+}
+
+app.post("/delMember", (req, res) => {
+  const roomName = req.body.roomName
+  const userName = req.body.userName
+  delMember(roomName, userName)
+  res.send(JSON.stringify({}));
+})
+
+const delMember = (roomName, userName) => {
+  memberData.forEach((item) => {
+    if(item.roomName === roomName){
+      removeByValue(item.roomMember, userName)
+    }
+  })
+}
+
+function removeByValue(arr, val) {
+  for(var i=0; i<arr.length; i++) {
+    if(arr[i] == val) {
+      arr.splice(i, 1);
+      //break;
+    }
+  }
+}
+
   
 app.listen(PORT, () => {
   console.log("app listening at :" + PORT);
